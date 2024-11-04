@@ -16,6 +16,7 @@ exports.create = async (req, res, next) => {
 
 exports.list = async(req , res , next) => {
     try {
+        const { per_page = 10, page = 1} = req.body;
         const brands = await Brand.find({});
         const count = await Brand.countDocuments({});
         return res.status(200).json({ rows: brands , count: count });

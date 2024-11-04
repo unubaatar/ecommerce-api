@@ -1,5 +1,6 @@
 // express set up
 const express = require("express");
+const cors = require('cors');
 const connectDb = require('./src/services/dbconnect');
 
 // env configuration 
@@ -15,6 +16,7 @@ const brandRoutes = require("./src/routes/brand.route");
 
 // use server and conenct mongodb 
 const app = express();
+app.use(cors());
 app.use(express.json());
 connectDb();
 
