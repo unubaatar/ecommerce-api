@@ -1,7 +1,8 @@
 const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 
-const defaultImage = "https://www.shutterstock.com/image-vector/default-ui-image-placeholder-wireframes-260nw-1037719192.jpg"
+const defaultImage =
+  "https://www.shutterstock.com/image-vector/default-ui-image-placeholder-wireframes-260nw-1037719192.jpg";
 
 const productSchema = new Schema(
   {
@@ -9,19 +10,19 @@ const productSchema = new Schema(
       type: String,
       required: true,
     },
-    available: {
+    isActive: {
       type: Boolean,
       default: true,
     },
     thumbnails: [
       {
         type: String,
-        default: defaultImage
+        default: defaultImage,
       },
     ],
     brand: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'Brand'
+      ref: "Brand",
     },
     sellPrice: {
       type: Number,
@@ -33,8 +34,14 @@ const productSchema = new Schema(
     taxon: {
       type: mongoose.Schema.Types.ObjectId,
       required: true,
-      ref: 'Taxon'
+      ref: "Taxon",
     },
+    variants: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "ProductVariant"
+      },
+    ],
   },
   {
     timestamps: true,
