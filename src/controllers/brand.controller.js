@@ -32,7 +32,7 @@ exports.update = async(req , res , next) => {
         if(!updatedBrand) {
             return res.status(400).json({ message: "Brand not found" });
         }
-        return res.status(400).json({ message: "Updated Successful" });
+        return res.status(200).json({ message: "Updated Successful" });
     } catch(err) {
         next(err);
     }

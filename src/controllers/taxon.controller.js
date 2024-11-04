@@ -7,7 +7,7 @@ exports.create = async(req ,  res , next) => {
             return res.status(404).json({ message: "Insert all fields" });
         }
 
-        const newTaxon = new Taxon( { name , ...body});
+        const newTaxon = new Taxon(req.body);
         await newTaxon.save();
         return res.status(201).json({ message: "Created" , newTaxon });
     } catch(err) {
