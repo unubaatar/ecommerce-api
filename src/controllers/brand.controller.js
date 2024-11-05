@@ -16,9 +16,10 @@ exports.create = async (req, res, next) => {
 
 exports.list = async(req , res , next) => {
     try {
-        const { per_page = 10, page = 1} = req.body;
-        const brands = await Brand.find({});
-        const count = await Brand.countDocuments({});
+        const { isActive } = req.body;
+        const query = isActive ? { isActive: isActive } : {};
+        const brands = await Brand.find(query);
+        const count = await Brand.countDocuments(query);
         return res.status(200).json({ rows: brands , count: count });
     } catch(err) {
         next(err);

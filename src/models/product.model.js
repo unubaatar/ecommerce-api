@@ -34,7 +34,7 @@ const productSchema = new Schema(
     taxon: {
       type: mongoose.Schema.Types.ObjectId,
       required: true,
-      ref: "Taxon",
+      ref: "Category",
     },
     variants: [
       {

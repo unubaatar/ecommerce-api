@@ -11,7 +11,7 @@ dotenv.config({ path: ".env" });
 //selected routes
 const userRoutes = require("./src/routes/user.route");
 const productRoutes = require("./src/routes/product.route");
-const taxonRoutes = require("./src/routes/taxon.route");
+const categoryRoutes = require("./src/routes/category.route");
 const brandRoutes = require("./src/routes/brand.route");
 const productVariantRoutes = require("./src/routes/productVariant.route");
 
@@ -24,7 +24,7 @@ connectDb();
 // routes
 app.use("/api/users" , userRoutes);
 app.use("/api/products" , productRoutes);
-app.use("/api/taxons" , taxonRoutes);
+app.use("/api/categories" , categoryRoutes);
 app.use("/api/brands" , brandRoutes);
 app.use("/api/productVariants" , productVariantRoutes);
 

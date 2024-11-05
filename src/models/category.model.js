@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 
-const taxonSchema = new Schema(
+const categorySchema = new Schema(
   {
     name: {
       type: String,
@@ -21,5 +21,5 @@ const taxonSchema = new Schema(
   }
 );
 
-const Taxon = mongoose.model("Taxon" , taxonSchema);
-module.exports = Taxon;
+const Category = mongoose.model("Category" , categorySchema);
+module.exports = Category;
