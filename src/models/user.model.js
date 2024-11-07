@@ -1,6 +1,8 @@
 const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
+const roles = require("../constants/roles");
 
 const userSchema = new Schema(
   {
@@ -24,6 +26,11 @@ const userSchema = new Schema(
       type: String,
       required: true,
     },
+    role: {
+      type: String,
+      enum: roles,
+      default: "productManager"
+    }
   },
   {
     timestamps: true,
@@ -44,6 +51,13 @@ userSchema.pre("save", async function (next) {
 
 userSchema.methods.comparePassword = async function (password) {
   return await bcrypt.compare(password, this.password);
+};
+
+userSchema.methods.getUserToken = () => {
+  const token = jwt.sign({ id: this._id }, process.env.SECRET_KEY, {
+    expiresIn: "2h",
+  });
+  return token;
 };
 
 const User = mongoose.model("User", userSchema);
