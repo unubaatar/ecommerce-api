@@ -31,7 +31,7 @@ exports.list = async (req, res, next) => {
         query.name = { $regex: filter.searchField, $options: "i" };
       }
   
-      const sortOrder = dateFilter === 'getFirst' ? -1 : 1;
+      const sortOrder = dateFilter === 'getFirst' ? 1 : -1;
       const sortByPrice = priceFilter === 'asc' ? 1 : -1 ;
       
       const items = await Product.find(query)
