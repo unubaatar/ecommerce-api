@@ -45,10 +45,14 @@ exports.login = async (req, res, next) => {
       return res.status(404).json({ message: "Password incorrect" });
     }
     const token = user.getUserToken();
-    const _id = user._id;
     return res
       .status(200)
-      .json({ message: "Successful", user: _id, token: token });
+      .json({
+        message: "Successful",
+        user: user._id,
+        token: token,
+        avatar: user.avatar,
+      });
   } catch (err) {
     next(err);
   }
@@ -96,21 +100,21 @@ exports.list = async (req, res, next) => {
       .limit(per_page)
       .select("-password");
     const count = await User.countDocuments({});
-    return res.status(200).json({ count: count , rows: users });
+    return res.status(200).json({ count: count, rows: users });
   } catch (err) {
     next(err);
   }
 };
 
-exports.getById = async(req , res , next) => {
+exports.getById = async (req, res, next) => {
   try {
     const { _id } = req.body;
     const user = await User.findById(_id).select("-password");
-    if(!user) {
+    if (!user) {
       return res.status(404).json({ message: "Хэрэглэгч олдсонгүй" });
     }
-    return res.status(200).json(user)
-  } catch(err) {
+    return res.status(200).json(user);
+  } catch (err) {
     next(err);
   }
-}
+};
