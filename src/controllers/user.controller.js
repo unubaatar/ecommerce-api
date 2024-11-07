@@ -53,3 +53,64 @@ exports.login = async (req, res, next) => {
     next(err);
   }
 };
+
+exports.update = async (req, res, next) => {
+  try {
+    const { _id, ...body } = req.body;
+    const user = await User.findByIdAndUpdate(_id, req.body);
+    if (!user) {
+      return res.status(404).json({ message: "Хэрэглэгч олдсонгүй" });
+    }
+    return res
+      .status(200)
+      .json({ message: "Хэрэглэгч амжилттай шинэчлэгдлээ" });
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.changePassword = async (req, res, next) => {
+  try {
+    const { _id, password, newPassword } = req.body;
+    const user = await User.findById(_id);
+    if (!user) {
+      return res.status(404).json({ message: "Хэрэглэгч олдсонгүй" });
+    }
+    const isMatch = await user.comparePassword(password);
+    if (isMatch) {
+      return res.status(404).json({ message: "Нууц үг таарахгүй байна." });
+    }
+    user.password = newPassword;
+    await user.save();
+    return res.status(200).json({ message: "Password changed successful" });
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.list = async (req, res, next) => {
+  try {
+    const { per_page, page } = req.body;
+    const users = await User.find({})
+      .skip((page - 1) * per_page)
+      .limit(per_page)
+      .select("-password");
+    const count = await User.countDocuments({});
+    return res.status(200).json({ count: count , rows: users });
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.getById = async(req , res , next) => {
+  try {
+    const { _id } = req.body;
+    const user = await User.findById(_id).select("-password");
+    if(!user) {
+      return res.status(404).json({ message: "Хэрэглэгч олдсонгүй" });
+    }
+    return res.status(200).json(user)
+  } catch(err) {
+    next(err);
+  }
+}

@@ -4,6 +4,8 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const roles = require("../constants/roles");
 
+const defaultAvatar = "https://i0.wp.com/sbcf.fr/wp-content/uploads/2018/03/sbcf-default-avatar.png?ssl=1";
+
 const userSchema = new Schema(
   {
     firstName: {
@@ -25,6 +27,10 @@ const userSchema = new Schema(
     phone: {
       type: String,
       required: true,
+    },
+    avatar: {
+      type: String,
+      default: defaultAvatar
     },
     role: {
       type: String,
