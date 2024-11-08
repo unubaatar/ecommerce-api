@@ -66,7 +66,7 @@ exports.update = async (req, res, next) => {
 exports.getById = async (req, res, next) => {
   try {
     const { _id, ...body } = req.body;
-    const product = await Product.findById(_id);
+    const product = await Product.findById(_id).populate('taxon brand variants');
     if (!product) {
       return res.status(400).json({ message: "Product not found" });
     }
