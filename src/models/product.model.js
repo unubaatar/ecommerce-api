@@ -31,10 +31,13 @@ const productSchema = new Schema(
       type: Number,
       required: true,
     },
-    taxon: {
+    category: {
       type: mongoose.Schema.Types.ObjectId,
       required: true,
       ref: "Category",
+    },
+    description: {
+      type: String,
     },
     variants: [
       {
