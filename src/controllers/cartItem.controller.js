@@ -2,12 +2,12 @@ const CartItem = require("../models/cartItem.model");
 
 exports.create = async (req, res, next) => {
   try {
-    const { product, variant, qty, salePrice, price, customer, ...body } = req.body;
+    const { product, variant, qty, salePrice, price, customer, ...body } =
+      req.body;
 
     if (!product || !qty || !customer || !price) {
       return res.status(400).json({ message: "Insert all fields" });
     }
-
     const newCartItem = new CartItem({
       product,
       qty,
@@ -19,7 +19,9 @@ exports.create = async (req, res, next) => {
     });
 
     await newCartItem.save();
-    return res.status(201).json({ message: "Cart item created successfully", newCartItem });
+    return res
+      .status(201)
+      .json({ message: "Cart item created successfully", newCartItem });
   } catch (err) {
     next(err);
   }
@@ -54,14 +56,9 @@ exports.list = async (req, res, next) => {
 
 exports.getAll = async (req, res, next) => {
   try {
-    const cartItems = await CartItem.find()
-      .populate("product")
-      .populate({
-        path: "variant",
-        options: { strictPopulate: false },
-      })
-      .populate("customer");
-
+    const cartItems = await CartItem.find().populate(
+      "product variant customer"
+    );
     const totalCount = await CartItem.countDocuments();
 
     return res.status(200).json({ rows: cartItems, count: totalCount });
@@ -83,7 +80,9 @@ exports.update = async (req, res, next) => {
       return res.status(404).json({ message: "Cart item not found" });
     }
 
-    return res.status(200).json({ message: "Cart item updated successfully", updatedCartItem });
+    return res
+      .status(200)
+      .json({ message: "Cart item updated successfully", updatedCartItem });
   } catch (err) {
     next(err);
   }
@@ -91,20 +90,15 @@ exports.update = async (req, res, next) => {
 
 exports.getByCustomerId = async (req, res, next) => {
   try {
-    const { customer } = req.params;
+    const { customer } = req.body;
 
-    const cartItems = await CartItem.find({ customer })
-      .populate("product")
-      .populate({
-        path: "variant",
-        options: { strictPopulate: false },
-      });
-
+    const cartItems = await CartItem.find({ customer }).populate("product variant");
     if (cartItems.length === 0) {
-      return res.status(404).json({ message: "No cart items found for this customer" });
+      return res
+        .status(404)
+        .json({ message: "No cart items found for this customer" });
     }
-
-    return res.status(200).json(cartItems);
+    return res.status(200).json({ rows: cartItems , count: cartItems.length });
   } catch (err) {
     next(err);
   }
@@ -112,14 +106,16 @@ exports.getByCustomerId = async (req, res, next) => {
 
 exports.delete = async (req, res, next) => {
   try {
-    const { id } = req.params;
+    const { _id } = req.body;
 
-    const deletedCartItem = await CartItem.findByIdAndDelete(id);
+    const deletedCartItem = await CartItem.findByIdAndDelete(_id);
     if (!deletedCartItem) {
       return res.status(404).json({ message: "Cart item not found" });
     }
 
-    return res.status(200).json({ message: "Cart item deleted successfully", deletedCartItem });
+    return res
+      .status(200)
+      .json({ message: "Cart item deleted successfully", deletedCartItem });
   } catch (err) {
     next(err);
   }
