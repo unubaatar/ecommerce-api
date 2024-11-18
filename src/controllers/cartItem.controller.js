@@ -10,12 +10,12 @@ exports.create = async (req, res, next) => {
 
     const newCartItem = new CartItem({
       product,
-      variant,
       qty,
       salePrice,
       price,
       customer,
       ...body,
+      ...(variant && { variant }),
     });
 
     await newCartItem.save();
@@ -35,7 +35,12 @@ exports.list = async (req, res, next) => {
     }
 
     const cartItems = await CartItem.find(query)
-      .populate("product variant customer")
+      .populate("product")
+      .populate({
+        path: "variant",
+        options: { strictPopulate: false },
+      })
+      .populate("customer")
       .skip((page - 1) * per_page)
       .limit(per_page);
 
@@ -49,7 +54,14 @@ exports.list = async (req, res, next) => {
 
 exports.getAll = async (req, res, next) => {
   try {
-    const cartItems = await CartItem.find().populate("product variant customer");
+    const cartItems = await CartItem.find()
+      .populate("product")
+      .populate({
+        path: "variant",
+        options: { strictPopulate: false },
+      })
+      .populate("customer");
+
     const totalCount = await CartItem.countDocuments();
 
     return res.status(200).json({ rows: cartItems, count: totalCount });
@@ -81,7 +93,13 @@ exports.getByCustomerId = async (req, res, next) => {
   try {
     const { customer } = req.params;
 
-    const cartItems = await CartItem.find({ customer }).populate("product variant");
+    const cartItems = await CartItem.find({ customer })
+      .populate("product")
+      .populate({
+        path: "variant",
+        options: { strictPopulate: false },
+      });
+
     if (cartItems.length === 0) {
       return res.status(404).json({ message: "No cart items found for this customer" });
     }
