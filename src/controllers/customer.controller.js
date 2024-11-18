@@ -6,7 +6,14 @@ exports.create = async (req, res, next) => {
     if (!firstname || !lastname || !phone || !email || !password) {
       return res.status(400).json({ message: "All fields are required" });
     }
-
+    const foundCustomerByPhone =  await Customer.findOne({ phone: phone });
+    if(foundCustomerByPhone) {
+      return res.status(400).json({ message: "Phone has already registered" });
+    }
+    const foundCustomerByEmail = await Customer.findOne({ email: email });
+    if(foundCustomerByEmail) {
+      return res.status(400).json({ message: "Email has already registered" });
+    }
     const newCustomer = new Customer({ firstname, lastname, phone, email, password });
     await newCustomer.save();
     res.status(201).json({ message: "Customer created successfully", newCustomer });
@@ -14,6 +21,26 @@ exports.create = async (req, res, next) => {
     next(err);
   }
 };
+
+exports.login = async(req , res  , next) => {
+  try {
+    const { phone , password } = req.body;
+    if(!phone , !password) {
+      return res.status(400).json({ message: "All fields are required" });
+    }
+    const customer = await Customer.findOne({ phone: phone });
+    if(!customer) {
+      return res.status(400).json({ message: "Customer not found" });
+    }
+    const isMatch = await customer.comparePassword(password);
+    if(isMatch) {
+      return res.status(200).json({ customer: customer._id });
+    }
+    return res.status(400).json({ message: "password is not matching" });
+  } catch(err) {
+    next(err);
+  }
+}
 
 exports.list = async (req, res, next) => {
   try {
