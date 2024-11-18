@@ -33,8 +33,9 @@ exports.login = async(req , res  , next) => {
       return res.status(400).json({ message: "Customer not found" });
     }
     const isMatch = await customer.comparePassword(password);
+    console.log(customer._id.toString());
     if(isMatch) {
-      return res.status(200).json({ customer: customer._id });
+      return res.status(200).json({ customer: customer._id.toString() });
     }
     return res.status(400).json({ message: "password is not matching" });
   } catch(err) {
