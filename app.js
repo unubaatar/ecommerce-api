@@ -16,6 +16,7 @@ const brandRoutes = require("./src/routes/brand.route");
 const productVariantRoutes = require("./src/routes/productVariant.route");
 const customerRoutes = require("./src/routes/customer.route");
 const cartItemRoutes = require("./src/routes/cartItem.route");
+const orderRoutes = require("./src/routes/order.route");
 
 // use server and conenct mongodb 
 const app = express();
@@ -31,6 +32,7 @@ app.use("/api/brands" , brandRoutes);
 app.use("/api/productVariants" , productVariantRoutes);
 app.use("/api/customers", customerRoutes);
 app.use("/api/cartItems", cartItemRoutes);
+app.use("/api/orders", orderRoutes);
 
 app.listen(process.env.PORT, () => {
   console.log(`Server is running on http://localhost:${process.env.PORT}`);
