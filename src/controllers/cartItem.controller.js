@@ -71,10 +71,7 @@ exports.update = async (req, res, next) => {
   try {
     const { _id, ...body } = req.body;
 
-    const updatedCartItem = await CartItem.findByIdAndUpdate(_id, body, {
-      new: true,
-      runValidators: true,
-    });
+    const updatedCartItem = await CartItem.findByIdAndUpdate(_id, req.body);
 
     if (!updatedCartItem) {
       return res.status(404).json({ message: "Cart item not found" });
@@ -93,11 +90,6 @@ exports.getByCustomerId = async (req, res, next) => {
     const { customer } = req.body;
 
     const cartItems = await CartItem.find({ customer }).populate("product variant");
-    if (cartItems.length === 0) {
-      return res
-        .status(404)
-        .json({ message: "No cart items found for this customer" });
-    }
     return res.status(200).json({ rows: cartItems , count: cartItems.length });
   } catch (err) {
     next(err);

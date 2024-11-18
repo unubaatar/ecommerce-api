@@ -82,10 +82,6 @@ exports.createOrder = async (req, res, next) => {
   }
 };
 
-
-
-
-
 exports.getAllOrders = async (req, res, next) => {
   try {
     const { page = 1, per_page = 10, customer } = req.query;
@@ -119,8 +115,6 @@ exports.getAllOrders = async (req, res, next) => {
     next(err);
   }
 };
-
-
 
 exports.getOrderById = async (req, res, next) => {
   try {
