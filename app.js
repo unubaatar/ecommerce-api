@@ -35,7 +35,7 @@ app.use("/api/cartItems", cartItemRoutes);
 app.use("/api/orders", orderRoutes);
 
 app.use("/" , (req, res) => {
-  res.status(200).send('Hello, World!');
+  res.status(200).send('Odkood hairtai');
 });
 
 app.listen(process.env.PORT, () => {
