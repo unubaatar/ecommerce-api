@@ -34,6 +34,10 @@ app.use("/api/customers", customerRoutes);
 app.use("/api/cartItems", cartItemRoutes);
 app.use("/api/orders", orderRoutes);
 
+app.use("/" , (req, res) => {
+  res.status(200).send('Hello, World!');
+});
+
 app.listen(process.env.PORT, () => {
   console.log(`Server is running on http://localhost:${process.env.PORT}`);
 });
