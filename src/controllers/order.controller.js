@@ -1,26 +1,29 @@
 const mongoose = require('mongoose');
-
 const Order = require('../models/order.model');
 const Product = require('../models/product.model');
 const ProductVariant = require('../models/productVariant.model');
+const generateOrderNumber = require('../generator/orderNumber');
+const STATES_AND_DISTRICTS = require('../constants/states');
 
 
-const generateOrderNumber = () => {
-  const date = new Date();
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  const day = String(date.getDate()).padStart(2, '0');
-  const time = date.getTime().toString().slice(-5);
-  const randomString = Math.random().toString(36).substring(2, 6).toUpperCase();
-  return `ORD-${year}${month}${day}-${time}${randomString}`;
-};
 
 exports.createOrder = async (req, res, next) => {
   try {
-    const { customer, items, orderStatus } = req.body;
+    const { customer, items, orderStatus, address } = req.body;
 
-    if (!customer || !items || items.length === 0) {
-      return res.status(400).json({ message: 'Customer and items are required.' });
+    if (!customer || !items || items.length === 0 || !address) {
+      return res.status(400).json({ message: 'Customer, items, and address are required.' });
+    }
+
+    const { state, district, street, note = "" } = address;  // Default note to an empty string if not provided
+
+    if (!STATES_AND_DISTRICTS[state]) {
+      return res.status(400).json({ message: 'Invalid state selected.' });
+    }
+
+    const stateInfo = STATES_AND_DISTRICTS[state];
+    if (!stateInfo.districts[district]) {
+      return res.status(400).json({ message: `Invalid district selected for state ${stateInfo.name}.` });
     }
 
     let totalAmount = 0;
@@ -33,7 +36,13 @@ exports.createOrder = async (req, res, next) => {
         return res.status(400).json({ message: 'Each item must include product and qty.' });
       }
 
-      const productDetails = await Product.findById(product).exec();
+      let productDetails;
+      try {
+        productDetails = await Product.findById(product).exec();
+      } catch (err) {
+        return res.status(500).json({ message: `Error fetching product with ID ${product}` });
+      }
+
       if (!productDetails) {
         return res.status(404).json({ message: `Product with ID ${product} not found.` });
       }
@@ -41,10 +50,17 @@ exports.createOrder = async (req, res, next) => {
       let price, salePrice;
 
       if (variant) {
-        const variantDetails = await ProductVariant.findById(variant).exec();
+        let variantDetails;
+        try {
+          variantDetails = await ProductVariant.findById(variant).exec();
+        } catch (err) {
+          return res.status(500).json({ message: `Error fetching variant with ID ${variant}` });
+        }
+
         if (!variantDetails) {
           return res.status(404).json({ message: `Variant with ID ${variant} not found.` });
         }
+
         price = variantDetails.price;
         salePrice = variantDetails.sellPrice || price;
       } else {
@@ -72,94 +88,67 @@ exports.createOrder = async (req, res, next) => {
       totalAmount,
       orderStatus,
       orderNumber,
+      address: {
+        state,
+        district,
+        street,
+        note,  // note can now be optional
+      },
     });
 
     await newOrder.save();
 
-    return res.status(201).json({ message: 'Order created successfully', newOrder });
-  } catch (err) {
-    next(err);
-  }
-};
-
-
-
-
-
-exports.getAllOrders = async (req, res, next) => {
-  try {
-    const { page = 1, per_page = 10, customer } = req.query;
-    const query = {};
-
-    if (customer) {
-      if (mongoose.Types.ObjectId.isValid(customer)) {
-        query.customer = customer;
-      } else {
-        return res.status(400).json({ message: 'Invalid customer ID format' });
+    return res.status(201).json({
+      message: 'Order created successfully',
+      newOrder: {
+        orderNumber: newOrder.orderNumber,
+        items: processedItems,
+        totalAmount,
+        orderStatus: newOrder.orderStatus,
       }
-    }
-
-    const skip = (page - 1) * per_page;
-    const limit = Number(per_page);
-
-    const orders = await Order.find(query)
-      .populate('customer')
-      .populate('items.product')
-      .populate({
-        path: 'items.variant',
-        options: { strictPopulate: false },
-      })
-      .skip(skip)
-      .limit(limit);
-
-    const totalCount = await Order.countDocuments(query);
-
-    return res.status(200).json({ rows: orders, count: totalCount });
+    });
   } catch (err) {
     next(err);
   }
 };
 
-
-
-exports.getOrderById = async (req, res, next) => {
-  try {
-    const { id } = req.params;
-
-    const order = await Order.findById(id)
-      .populate('customer')
-      .populate({
-        path: 'items.product',
-      })
-      .populate({
-        path: 'items.variant',
-        options: { strictPopulate: false },
-      });
-
-    if (!order) {
-      return res.status(404).json({ message: 'Order not found' });
-    }
-
-    return res.status(200).json(order);
-  } catch (err) {
-    next(err);
-  }
-};
 
 exports.updateOrder = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const { items, totalAmount, orderStatus } = req.body;
+    const { items, totalAmount, orderStatus, address } = req.body;
+
+    if (!items || items.length === 0 || !address) {
+      return res.status(400).json({ message: 'Items and address are required.' });
+    }
+
+    const { state, district, note } = address;
+
+    if (!STATES_AND_DISTRICTS[state]) {
+      return res.status(400).json({ message: 'Invalid state selected.' });
+    }
+
+    const stateInfo = STATES_AND_DISTRICTS[state];
+    if (!stateInfo.districts[district]) {
+      return res.status(400).json({ message: `Invalid district selected for state ${stateInfo.name}.` });
+    }
 
     const updatedOrder = await Order.findByIdAndUpdate(
       id,
-      { items, totalAmount, orderStatus },
+      {
+        items,
+        totalAmount,
+        orderStatus,
+        address: {
+          state,
+          district,
+          note,
+        },
+      },
       { new: true, runValidators: true }
     )
       .populate('customer')
-      .populate({
-        path: 'items.product',
-      })
+      .populate('items.product')
       .populate({
         path: 'items.variant',
         options: { strictPopulate: false },
@@ -175,6 +164,43 @@ exports.updateOrder = async (req, res, next) => {
   }
 };
 
+exports.getOrderById = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const order = await Order.findById(id)
+      .populate('customer')
+      .populate('items.product')
+      .populate({
+        path: 'items.variant',
+        options: { strictPopulate: false },
+      });
+
+    if (!order) {
+      return res.status(404).json({ message: 'Order not found' });
+    }
+
+    return res.status(200).json(order);
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.getOrders = async (req, res, next) => {
+  try {
+    const orders = await Order.find()
+      .populate('customer')
+      .populate('items.product')
+      .populate({
+        path: 'items.variant',
+        options: { strictPopulate: false },
+      });
+
+    return res.status(200).json(orders);
+  } catch (err) {
+    next(err);
+  }
+};
+
 exports.deleteOrder = async (req, res, next) => {
   try {
     const { id } = req.params;
@@ -185,8 +211,9 @@ exports.deleteOrder = async (req, res, next) => {
       return res.status(404).json({ message: 'Order not found' });
     }
 
-    return res.status(200).json({ message: 'Order deleted successfully', deletedOrder });
+    return res.status(200).json({ message: 'Order deleted successfully' });
   } catch (err) {
     next(err);
   }
 };
+

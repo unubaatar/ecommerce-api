@@ -1,8 +1,24 @@
 const mongoose = require('mongoose');
+const STATES_AND_DISTRICTS = require('../constants/states');
 
 const orderSchema = new mongoose.Schema({
   orderNumber: { type: String, unique: true, required: true },
   customer: { type: mongoose.Schema.Types.ObjectId, ref: 'Customer', required: true },
+  address: {
+    state: { type: Number, required: true, enum: Object.keys(STATES_AND_DISTRICTS).map(Number) },
+    district: {
+      type: Number,
+      required: true,
+      validate: {
+        validator: function (value) {
+          const stateInfo = STATES_AND_DISTRICTS[this.address.state];
+          return stateInfo && stateInfo.districts[value];
+        },
+        message: (props) => `${props.value} is not a valid district for the selected state.`,
+      },
+    },
+    note: { type: String },
+  },
   items: [
     {
       product: { type: mongoose.Schema.Types.ObjectId, ref: 'Product', required: true },
