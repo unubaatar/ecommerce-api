@@ -15,7 +15,7 @@ exports.createOrder = async (req, res, next) => {
       return res.status(400).json({ message: 'Customer, items, and address are required.' });
     }
 
-    const { state, district, street, note = "" } = address;  // Default note to an empty string if not provided
+    const { state, district, street, note = "" } = address;
 
     if (!STATES_AND_DISTRICTS[state]) {
       return res.status(400).json({ message: 'Invalid state selected.' });
