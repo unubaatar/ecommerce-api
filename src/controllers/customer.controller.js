@@ -54,7 +54,7 @@ exports.list = async (req, res, next) => {
 
 exports.getById = async (req, res, next) => {
   try {
-    const { customerId } = req.params;
+    const { customerId } = req.body;
     const customer = await Customer.findById(customerId);
     if (!customer) {
       return res.status(404).json({ message: "Customer not found" });
