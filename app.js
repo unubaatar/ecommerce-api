@@ -36,6 +36,10 @@ app.use("/api/cartItems", cartItemRoutes);
 app.use("/api/orders", orderRoutes);
 app.use("/api/reviews", reviewRoutes);
 
+// app.use("/" , (req, res) => {
+//   res.status(200).send(' <h1>Odkood hairtai</h1>');
+// });
+
 app.listen(process.env.PORT, () => {
   console.log(`Server is running on http://localhost:${process.env.PORT}`);
 });

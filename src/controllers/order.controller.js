@@ -98,20 +98,52 @@ exports.createOrder = async (req, res, next) => {
 
     await newOrder.save();
 
-    return res.status(201).json({
-      message: 'Order created successfully',
-      newOrder: {
-        orderNumber: newOrder.orderNumber,
-        items: processedItems,
-        totalAmount,
-        orderStatus: newOrder.orderStatus,
-      }
-    });
+    return res.status(201).json({ message: 'Order created successfully', newOrder });
   } catch (err) {
     next(err);
   }
 };
 
+exports.getAllOrders = async (req, res, next) => {
+  try {
+    const { page = 1, per_page = 10, customer } = req.body;
+    const query = {};
+
+    if (customer) {
+      if (mongoose.Types.ObjectId.isValid(customer)) {
+        query.customer = customer;
+      } else {
+        return res.status(400).json({ message: 'Invalid customer ID format' });
+      }
+    };
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.getOrderById = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+
+    const order = await Order.findById(id)
+      .populate('customer')
+      .populate({
+        path: 'items.product',
+      })
+      .populate({
+        path: 'items.variant',
+        options: { strictPopulate: false },
+      });
+
+    if (!order) {
+      return res.status(404).json({ message: 'Order not found' });
+    }
+
+    return res.status(200).json(order);
+  } catch (err) {
+    next(err);
+  }
+};
 
 exports.updateOrder = async (req, res, next) => {
   try {
