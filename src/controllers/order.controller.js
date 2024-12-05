@@ -1,13 +1,14 @@
 const mongoose = require('mongoose');
 const Order = require('../models/order.model');
 const Product = require('../models/product.model');
+const CartItem = require('../models/cartItem.model');
 const ProductVariant = require('../models/productVariant.model');
 const generateOrderNumber = require('../generator/orderNumber');
 const STATES_AND_DISTRICTS = require('../constants/states');
 
 
 
-exports.createOrder = async (req, res, next) => {
+exports.create = async (req, res, next) => {
   try {
     const { customer, items, orderStatus, address } = req.body;
 
@@ -17,14 +18,6 @@ exports.createOrder = async (req, res, next) => {
 
     const { state, district, street, note = "" } = address;
 
-    if (!STATES_AND_DISTRICTS[state]) {
-      return res.status(400).json({ message: 'Invalid state selected.' });
-    }
-
-    const stateInfo = STATES_AND_DISTRICTS[state];
-    if (!stateInfo.districts[district]) {
-      return res.status(400).json({ message: `Invalid district selected for state ${stateInfo.name}.` });
-    }
 
     let totalAmount = 0;
     const processedItems = [];
@@ -92,19 +85,19 @@ exports.createOrder = async (req, res, next) => {
         state,
         district,
         street,
-        note,  // note can now be optional
+        note,  
       },
     });
 
     await newOrder.save();
-
-    return res.status(201).json({ message: 'Order created successfully', newOrder });
+    const cartItemsToDelete = await CartItem.deleteMany({ customer: customer });
+    return res.status(201).json( newOrder);
   } catch (err) {
     next(err);
   }
 };
 
-exports.getAllOrders = async (req, res, next) => {
+exports.list = async (req, res, next) => {
   try {
     const { page = 1, per_page = 10, customer } = req.body;
     const query = {};
@@ -121,11 +114,11 @@ exports.getAllOrders = async (req, res, next) => {
   }
 };
 
-exports.getOrderById = async (req, res, next) => {
+exports.getById = async (req, res, next) => {
   try {
-    const { id } = req.params;
+    const { _id } = req.body;
 
-    const order = await Order.findById(id)
+    const order = await Order.findById(_id)
       .populate('customer')
       .populate({
         path: 'items.product',
@@ -145,81 +138,23 @@ exports.getOrderById = async (req, res, next) => {
   }
 };
 
-exports.updateOrder = async (req, res, next) => {
+exports.update = async (req, res, next) => {
   try {
-    const { id } = req.params;
-    const { items, totalAmount, orderStatus, address } = req.body;
-
-    if (!items || items.length === 0 || !address) {
-      return res.status(400).json({ message: 'Items and address are required.' });
-    }
-
-    const { state, district, note } = address;
-
-    if (!STATES_AND_DISTRICTS[state]) {
-      return res.status(400).json({ message: 'Invalid state selected.' });
-    }
-
-    const stateInfo = STATES_AND_DISTRICTS[state];
-    if (!stateInfo.districts[district]) {
-      return res.status(400).json({ message: `Invalid district selected for state ${stateInfo.name}.` });
-    }
-
-    const updatedOrder = await Order.findByIdAndUpdate(
-      id,
-      {
-        items,
-        totalAmount,
-        orderStatus,
-        address: {
-          state,
-          district,
-          note,
-        },
-      },
-      { new: true, runValidators: true }
-    )
-      .populate('customer')
-      .populate('items.product')
-      .populate({
-        path: 'items.variant',
-        options: { strictPopulate: false },
-      });
-
+    const { _id } = req.body;
+    const updatedOrder = await Order.findByIdAndUpdate( _id, req.body);
     if (!updatedOrder) {
       return res.status(404).json({ message: 'Order not found' });
     }
-
-    return res.status(200).json({ message: 'Order updated successfully', updatedOrder });
+    return res.status(200).json({ message: 'Order updated successfully' });
   } catch (err) {
     next(err);
   }
 };
 
-exports.getOrderById = async (req, res, next) => {
+exports.getByCustomer = async (req, res, next) => {
   try {
-    const { id } = req.params;
-    const order = await Order.findById(id)
-      .populate('customer')
-      .populate('items.product')
-      .populate({
-        path: 'items.variant',
-        options: { strictPopulate: false },
-      });
-
-    if (!order) {
-      return res.status(404).json({ message: 'Order not found' });
-    }
-
-    return res.status(200).json(order);
-  } catch (err) {
-    next(err);
-  }
-};
-
-exports.getOrders = async (req, res, next) => {
-  try {
-    const orders = await Order.find()
+    const { customer } = req.body;
+    const orders = await Order.find( { customer: customer } )
       .populate('customer')
       .populate('items.product')
       .populate({
