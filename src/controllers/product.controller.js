@@ -57,7 +57,7 @@ exports.list = async (req, res, next) => {
 exports.getAll = async (req, res, next) => {
   try {
     let query = {};
-    const items = await Product.find(query).populate("category brand");
+    const items = await Product.find(query).populate("category brand").sort({ createdAt: -1 });
     const totalCount = await Product.countDocuments(query);
 
     return res.status(200).json({ rows: items, count: totalCount });
