@@ -36,9 +36,9 @@ exports.getByProduct = async (req, res, next) => {
       return res.status(404).json({ message: 'Product not found.' });
     }
 
-    const reviews = await Review.find({ product: productId }).populate('customer', 'firstname lastname').exec();
+    const reviews = await Review.find({ product: productId }).populate('customer').exec();
 
-    res.status(200).json({ message: 'Reviews fetched successfully.', reviews });
+    res.status(200).json(reviews);
   } catch (err) {
     next(err);
   }
