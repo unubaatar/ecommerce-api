@@ -10,60 +10,28 @@ const STATES_AND_DISTRICTS = require("../constants/states");
 exports.create = async (req, res, next) => {
   try {
     const { customer, items, orderStatus, address } = req.body;
-
     if (!customer || !items || items.length === 0 || !address) {
-      return res
-        .status(400)
-        .json({ message: "Customer, items, and address are required." });
+      return res.status(400).json({ message: "Customer, items, and address are required." });
     }
-
-    const { state, district, street, note = "" } = address;
-
-    let totalAmount = 0;
-    const processedItems = [];
-
-    for (const item of items) {
+    const processedItemsPromises = items.map(async (item) => {
       const { product, variant, qty } = item;
 
       if (!product || !qty) {
-        return res
-          .status(400)
-          .json({ message: "Each item must include product and qty." });
+        throw new Error("Each item must include product and qty.");
       }
 
-      let productDetails;
-      try {
-        productDetails = await Product.findById(product).exec();
-      } catch (err) {
-        return res
-          .status(500)
-          .json({ message: `Error fetching product with ID ${product}` });
-      }
-
+      const productDetails = await Product.findById(product);
       if (!productDetails) {
-        return res
-          .status(404)
-          .json({ message: `Product with ID ${product} not found.` });
+        throw new Error(`Product with ID ${product} not found.`);
       }
 
       let price, salePrice;
 
       if (variant) {
-        let variantDetails;
-        try {
-          variantDetails = await ProductVariant.findById(variant).exec();
-        } catch (err) {
-          return res
-            .status(500)
-            .json({ message: `Error fetching variant with ID ${variant}` });
-        }
-
+        const variantDetails = await ProductVariant.findById(variant);
         if (!variantDetails) {
-          return res
-            .status(404)
-            .json({ message: `Variant with ID ${variant} not found.` });
+          throw new Error(`Variant with ID ${variant} not found.`);
         }
-
         price = variantDetails.price;
         salePrice = variantDetails.sellPrice || price;
       } else {
@@ -72,17 +40,12 @@ exports.create = async (req, res, next) => {
       }
 
       const itemTotal = salePrice * qty;
-      totalAmount += itemTotal;
+      return { product, variant, qty, price, salePrice, itemTotal };
+    });
 
-      processedItems.push({
-        product,
-        variant,
-        qty,
-        price,
-        salePrice,
-      });
-    }
+    const processedItems = await Promise.all(processedItemsPromises);
 
+    const totalAmount = processedItems.reduce((acc, item) => acc + item.itemTotal, 0);
     const orderNumber = generateOrderNumber();
 
     const newOrder = new Order({
@@ -91,21 +54,16 @@ exports.create = async (req, res, next) => {
       totalAmount,
       orderStatus,
       orderNumber,
-      address: {
-        state,
-        district,
-        street,
-        note,
-      },
+      address
     });
-
     await newOrder.save();
-    const cartItemsToDelete = await CartItem.deleteMany({ customer: customer });
+    await CartItem.deleteMany({ customer });
     return res.status(201).json(newOrder);
   } catch (err) {
-    next(err);
+    next(err); 
   }
 };
+
 // Захиалгуудын мэдээллийг авах функц
 exports.list = async (req, res, next) => {
   try {
