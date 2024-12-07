@@ -67,8 +67,8 @@ exports.getById = async (req, res, next) => {
 
 exports.update = async (req, res, next) => {
   try {
-    const { customerId, ...body } = req.body;
-    const customer = await Customer.findByIdAndUpdate(customerId, body, { new: true });
+    const { _id , ...body } = req.body;
+    const customer = await Customer.findByIdAndUpdate(_id, req.body);
     if (!customer) {
       return res.status(404).json({ message: "Customer not found" });
     }
