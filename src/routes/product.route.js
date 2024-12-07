@@ -7,5 +7,6 @@ router.post("/list" , productController.list);
 router.post("/update" , productController.update);
 router.post("/getById" , productController.getById);
 router.post("/getAll" , productController.getAll);
+router.post("/getSimiliarProducts" , productController.getSimiliarProducts);
 
 module.exports = router;

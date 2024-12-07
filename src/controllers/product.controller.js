@@ -56,8 +56,20 @@ exports.list = async (req, res, next) => {
 
 exports.getAll = async (req, res, next) => {
   try {
+    const { filter } = req.body;
     let query = {};
-    const items = await Product.find(query).populate("category brand").sort({ createdAt: -1 });
+    if (filter && filter.category) {
+      if (filter.category.length > 0) {
+        query.category = { $in: filter.category };
+      }
+    }
+
+    if (filter && filter.search) {
+      query.name = { $regex: filter.search, $options: "i" };
+    }
+    const items = await Product.find(query)
+      .populate("category brand")
+      .sort({ createdAt: -1 });
     const totalCount = await Product.countDocuments(query);
 
     return res.status(200).json({ rows: items, count: totalCount });
@@ -92,5 +104,25 @@ exports.getById = async (req, res, next) => {
     return res.status(200).json(product);
   } catch (err) {
     next(err);
+  }
+};
+
+exports.getSimiliarProducts = async (req, res, next) => {
+  try {
+    const { productId } = req.body;
+    console.log(req.body);
+    const foundProduct = await Product.findOne({ _id: productId });
+    const products = await Product.find({
+      category: foundProduct.category.toString(),
+      _id: { $ne: productId },
+    })
+    .populate("category brand")
+      .limit(4)
+      .sort({ createdAt: -1 });
+
+      return res.status(200).json(products);
+    
+  } catch (err) {
+    console.log(err);
   }
 };

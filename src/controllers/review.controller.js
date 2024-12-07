@@ -1,8 +1,7 @@
 const Review = require('../models/review.model');
 const Product = require('../models/product.model');
 
-// Create a new review
-exports.createReview = async (req, res, next) => {
+exports.create = async (req, res, next) => {
   try {
     const { product, customer, rating, comment } = req.body;
 
@@ -28,9 +27,9 @@ exports.createReview = async (req, res, next) => {
   }
 };
 
-exports.getReviewsByProduct = async (req, res, next) => {
+exports.getByProduct = async (req, res, next) => {
   try {
-    const { productId } = req.params;
+    const { productId } = req.body;
 
     const productExists = await Product.findById(productId).exec();
     if (!productExists) {
@@ -45,38 +44,24 @@ exports.getReviewsByProduct = async (req, res, next) => {
   }
 };
 
-exports.updateReview = async (req, res, next) => {
+exports.update = async (req, res, next) => {
   try {
-    const { reviewId } = req.params;
-    const { rating, comment } = req.body;
+    const { _id } = req.body;
 
-    const review = await Review.findById(reviewId).exec();
-    if (!review) {
-      return res.status(404).json({ message: 'Review not found.' });
+    const updatedReview = await Review.findByIdAndUpdate(_id , req.body);   
+    if(!updatedReview) {
+      res.status(200).json({ message: 'Review not found' });
     }
 
-    if (rating) {
-      if (rating < 1 || rating > 5) {
-        return res.status(400).json({ message: 'Rating must be between 1 and 5.' });
-      }
-      review.rating = rating;
-    }
-
-    if (comment) {
-      review.comment = comment;
-    }
-
-    await review.save();
-
-    res.status(200).json({ message: 'Review updated successfully.', review });
+    res.status(200).json({ message: 'Review updated successfully.' });
   } catch (err) {
     next(err);
   }
 };
 
-exports.deleteReview = async (req, res, next) => {
+exports.delete = async (req, res, next) => {
   try {
-    const { reviewId } = req.params;
+    const { reviewId } = req.body;
 
     const review = await Review.findByIdAndDelete(reviewId).exec();
     if (!review) {

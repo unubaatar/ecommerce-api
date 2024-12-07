@@ -2,7 +2,6 @@ const Category = require("../models/category.model");
 
 exports.create = async (req, res, next) => {
   try {
-    console.log("jiijiii");
     const { name, ...body } = req.body;
     if (!name) {
       return res.status(404).json({ message: "Insert all fields" });
@@ -17,10 +16,10 @@ exports.create = async (req, res, next) => {
 
 exports.list = async (req, res, next) => {
   try {
-    const { isActive, per_page = 10, page = 1 } = req.body;
+    const { isActive } = req.body;
     const query = isActive ? { isActive: isActive } : {};
     const totalCategories = await Category.find(query);
-    const totalCount = await Category.countDocuments(query).skip((page  - 1) * per_page);
+    const totalCount = await Category.countDocuments(query);
     return res.status(200).json({ rows: totalCategories, count: totalCount });
   } catch (err) {
     next(err);
