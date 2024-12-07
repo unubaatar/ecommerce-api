@@ -106,38 +106,42 @@ exports.create = async (req, res, next) => {
     next(err);
   }
 };
-
+// Захиалгуудын мэдээллийг авах функц
 exports.list = async (req, res, next) => {
   try {
+    // Хүсэлтийн body хэсгээс тухайн барааны filter болон хуудсны тоог авах
     const { page = 1, per_page = 10 , filter } = req.body;
     const query = {};
+    // Хэрэв тухайн орж ирсэн filter-т phone орж ирвэл тухайн хэрэглэгчийг утасны дугаараар нь хайн query-дээ оруулж өгнө. 
     if(filter && filter.phone) {
-      const customer = await Customer.find({ phone: filter.phone }).select("_id");
-      query.customer = { $in: customer }
+      const customer = await Customer.find({ phone: filter.phone }).select("_id"); // Зөвхөн ID-г сонгож авна. 
+      query.customer = { $in: customer }  // $in нь тухайн хэрэглэгчийн id-г агуулахаар query рүү оруулж өгнө. 
     };
-
+  // Хэрэв тухайн орж ирсэн filter-т orderNumber орж ирвэл захиалгын дугаарыг query-д оруулж өгнө. 
     if(filter && filter.orderNumber) {
       query.orderNumber = filter.orderNumber;
     };
-
+    // Хэрэв тухайн орж ирсэн filter-т orderStatus орж ирвэл захиалгын төлөвөөр query-д оруулж өгнө. 
     if(filter.orderStatus) {
       query.orderStatus = { $in: filter.orderStatus }
     };
-    console.log(query);
+    // Өгөгдлийн тоог countDocument ашиглан авна. 
     const count = await Order.countDocuments({});
+    //Тухайн орж ирсэн шүүлтээр дээр тулгуурлан өгөгдлүүдийг хайна. Ингэхдээ find() функц ашиглана. 
     const orders = await Order.find(query)
-      .skip((page - 1) * per_page)
-      .limit(per_page)
-      .populate("items.product")
-      .populate("items.variant")
+      .skip((page - 1) * per_page) // skip ашиглан хэр их хэмжээний өгөгдөл алгасхыг зааж өгнө. Энэ нь pagination хийхэд ашиглагдаж байгаа. 
+      .limit(per_page) // нэг хуудсанд орох өгөгдлийн тоог зааж өгсөн. 
+      .populate("items.product") // populate ашиглан item.product-г задлана. Populate нь mongoose-ийг Id - гаар шүүн дэлгэрэнгүй мэдээлэл авдаг функц
+      .populate("items.variant") 
       .populate("customer")
-      .sort({ createdAt: -1 });
-    return res.status(200).json({ rows: orders, count: count });
+      .sort({ createdAt: -1 }); // sort ашиглан үүссэн хугацаагаар нь буурах эрэмбээр эрэмбэлнэ. 
+    return res.status(200).json({ rows: orders, count: count }); // orders болон count - г json хэлбэрээр буцаана. 
   } catch (err) {
     next(err);
   }
 };
 
+// Захиалгыг Id-р нь хайх функц
 exports.getById = async (req, res, next) => {
   try {
     const { _id } = req.body;
@@ -162,6 +166,7 @@ exports.getById = async (req, res, next) => {
   }
 };
 
+// Захиалгыг шинэчлэх функц
 exports.update = async (req, res, next) => {
   try {
     const { _id } = req.body;
@@ -175,6 +180,7 @@ exports.update = async (req, res, next) => {
   }
 };
 
+// Захиалгуудыг хэрэглэгчээр нь авах функц
 exports.getByCustomer = async (req, res, next) => {
   try {
     const { customer } = req.body;
@@ -183,7 +189,8 @@ exports.getByCustomer = async (req, res, next) => {
       .populate("items.product")
       .populate({
         path: "items.variant",
-        options: { strictPopulate: false },
+        // items.variant байхгүй үед populate хийх шаардлагагүйг зааж өгсөн. 
+        options: { strictPopulate: false }, 
       });
 
     return res.status(200).json(orders);
@@ -192,10 +199,11 @@ exports.getByCustomer = async (req, res, next) => {
   }
 };
 
+// Захиалга устгах функц (Шаардлагатай үед ашиглана.)
 exports.deleteOrder = async (req, res, next) => {
   try {
     const { id } = req.params;
-
+    // findByIdAndDelete нь Order model-с id-р нь хайн устгадаг
     const deletedOrder = await Order.findByIdAndDelete(id);
 
     if (!deletedOrder) {
