@@ -1,5 +1,6 @@
 const Review = require('../models/review.model');
 const Product = require('../models/product.model');
+const { logControllerError } = require("../services/logger");
 
 exports.create = async (req, res, next) => {
   try {
@@ -23,6 +24,7 @@ exports.create = async (req, res, next) => {
 
     res.status(201).json({ message: 'Review added successfully.', review });
   } catch (err) {
+    logControllerError(err);
     next(err);
   }
 };
@@ -40,6 +42,7 @@ exports.getByProduct = async (req, res, next) => {
 
     res.status(200).json(reviews);
   } catch (err) {
+    logControllerError(err);
     next(err);
   }
 };
@@ -55,6 +58,7 @@ exports.update = async (req, res, next) => {
 
     res.status(200).json({ message: 'Review updated successfully.' });
   } catch (err) {
+    logControllerError(err);
     next(err);
   }
 };
@@ -70,6 +74,7 @@ exports.delete = async (req, res, next) => {
 
     res.status(200).json({ message: 'Review deleted successfully.' });
   } catch (err) {
+    logControllerError(err);
     next(err);
   }
 };

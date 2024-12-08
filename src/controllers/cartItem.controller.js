@@ -1,3 +1,4 @@
+const { logControllerError } = require("../services/logger");
 const CartItem = require("../models/cartItem.model");
 
 exports.create = async (req, res, next) => {
@@ -50,6 +51,7 @@ exports.list = async (req, res, next) => {
 
     return res.status(200).json({ rows: cartItems, count: totalCount });
   } catch (err) {
+    logControllerError(err);
     next(err);
   }
 };
@@ -63,6 +65,7 @@ exports.getAll = async (req, res, next) => {
 
     return res.status(200).json({ rows: cartItems, count: totalCount });
   } catch (err) {
+    logControllerError(err);
     next(err);
   }
 };
@@ -81,6 +84,7 @@ exports.update = async (req, res, next) => {
       .status(200)
       .json({ message: "Cart item updated successfully", updatedCartItem });
   } catch (err) {
+    logControllerError(err);
     next(err);
   }
 };
@@ -92,6 +96,7 @@ exports.getByCustomerId = async (req, res, next) => {
     const cartItems = await CartItem.find({ customer }).populate("product variant");
     return res.status(200).json({ rows: cartItems , count: cartItems.length });
   } catch (err) {
+    logControllerError(err);
     next(err);
   }
 };
@@ -109,6 +114,7 @@ exports.delete = async (req, res, next) => {
       .status(200)
       .json({ message: "Cart item deleted successfully", deletedCartItem });
   } catch (err) {
+    logControllerError(err);
     next(err);
   }
 };

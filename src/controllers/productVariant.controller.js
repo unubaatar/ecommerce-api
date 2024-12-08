@@ -1,5 +1,6 @@
 const ProductVariant = require("../models/productVariant.model");
 const Product =  require("../models/product.model");
+const { logControllerError } = require("../services/logger");
 
 exports.create = async (req, res, next) => {
   try {
@@ -19,6 +20,7 @@ exports.create = async (req, res, next) => {
       .status(201)
       .json({ message: "Амжилттай үүслээ", variant: productVariant });
   } catch (err) {
+    logControllerError(err);
     next(err);
   }
 };
@@ -35,6 +37,7 @@ exports.update = async (req, res, next) => {
     }
     return res.status(200).json({ message: "Амжилттай шинэчлэгдлээ" });
   } catch (err) {
+    logControllerError(err);
     next(err);
   }
 };
@@ -49,6 +52,7 @@ exports.list = async (req, res, next) => {
     const productVariantCount = await ProductVariant.countDocuments({ query });
     res.status(200).json({ rows: productVariants, count: productVariantCount });
   } catch (err) {
+    logControllerError(err);
     next(err);
   }
 };
@@ -62,6 +66,7 @@ exports.getById = async(req , res , next) => {
     }
     return res.status(200).json(variant);
   } catch(err) {
+    logControllerError(err);
     console.log(err);
   }
 }

@@ -1,4 +1,5 @@
 const Customer = require("../models/customer.model");
+const { logControllerError } = require("../services/logger");
 
 exports.create = async (req, res, next) => {
   try {
@@ -18,6 +19,7 @@ exports.create = async (req, res, next) => {
     await newCustomer.save();
     res.status(201).json({ message: "Customer created successfully", newCustomer });
   } catch (err) {
+    logControllerError(err);
     next(err);
   }
 };
@@ -39,6 +41,7 @@ exports.login = async(req , res  , next) => {
     }
     return res.status(400).json({ message: "password is not matching" });
   } catch(err) {
+    logControllerError(err);
     next(err);
   }
 }
@@ -48,6 +51,7 @@ exports.list = async (req, res, next) => {
     const customers = await Customer.find();
     res.status(200).json(customers);
   } catch (err) {
+    logControllerError(err);
     next(err);
   }
 };
@@ -61,6 +65,7 @@ exports.getById = async (req, res, next) => {
     }
     res.status(200).json(customer);
   } catch (err) {
+    logControllerError(err);
     next(err);
   }
 };
@@ -74,6 +79,7 @@ exports.update = async (req, res, next) => {
     }
     res.status(200).json({ message: "Customer updated successfully", customer });
   } catch (err) {
+    logControllerError(err);
     next(err);
   }
 };
@@ -96,6 +102,7 @@ exports.changePassword = async (req, res, next) => {
     await customer.save();
     res.status(200).json({ message: "Password changed successfully" });
   } catch (err) {
+    logControllerError(err);
     next(err);
   }
 };

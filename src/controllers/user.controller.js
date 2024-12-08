@@ -1,4 +1,5 @@
 const User = require("../models/user.model");
+const { logControllerError } = require("../services/logger");
 
 exports.create = async (req, res, next) => {
   try {
@@ -24,6 +25,7 @@ exports.create = async (req, res, next) => {
     await user.save();
     return res.status(201).json({ message: "User created", user: user });
   } catch (err) {
+    logControllerError(err);
     next(err);
   }
 };
@@ -54,6 +56,7 @@ exports.login = async (req, res, next) => {
         avatar: user.avatar,
       });
   } catch (err) {
+    logControllerError(err);
     next(err);
   }
 };
@@ -69,6 +72,7 @@ exports.update = async (req, res, next) => {
       .status(200)
       .json({ message: "Хэрэглэгч амжилттай шинэчлэгдлээ" });
   } catch (err) {
+    logControllerError(err);
     next(err);
   }
 };
@@ -88,6 +92,7 @@ exports.changePassword = async (req, res, next) => {
     await user.save();
     return res.status(200).json({ message: "Password changed successful" });
   } catch (err) {
+    logControllerError(err);
     next(err);
   }
 };
@@ -102,6 +107,7 @@ exports.list = async (req, res, next) => {
     const count = await User.countDocuments({});
     return res.status(200).json({ count: count, rows: users });
   } catch (err) {
+    logControllerError(err);
     next(err);
   }
 };
@@ -115,6 +121,7 @@ exports.getById = async (req, res, next) => {
     }
     return res.status(200).json(user);
   } catch (err) {
+    logControllerError(err);
     next(err);
   }
 };

@@ -1,4 +1,5 @@
 const Category = require("../models/category.model");
+const { logControllerError } = require("../services/logger");
 
 exports.create = async (req, res, next) => {
   try {
@@ -10,6 +11,7 @@ exports.create = async (req, res, next) => {
     await newCategory.save();
     return res.status(201).json({ message: "Created", newCategory });
   } catch (err) {
+    logControllerError(err);
     next(err);
   }
 };
@@ -22,6 +24,7 @@ exports.list = async (req, res, next) => {
     const totalCount = await Category.countDocuments(query);
     return res.status(200).json({ rows: totalCategories, count: totalCount });
   } catch (err) {
+    logControllerError(err);
     next(err);
   }
 };
@@ -32,6 +35,7 @@ exports.update = async (req, res, next) => {
     const updatedCategory = await Category.findByIdAndUpdate(_id, req.body);
     return res.status(200).json({ message: "Updated successful" });
   } catch (err) {
+    logControllerError(err);
     next(err);
   }
 };
@@ -45,6 +49,7 @@ exports.getById = async (req, res, next) => {
     }
     return res.status(200).json(category);
   } catch (err) {
+    logControllerError(err);
     next(err);
   }
 };

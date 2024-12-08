@@ -6,6 +6,7 @@ const Customer = require("../models/customer.model");
 const ProductVariant = require("../models/productVariant.model");
 const generateOrderNumber = require("../generator/orderNumber");
 const STATES_AND_DISTRICTS = require("../constants/states");
+const { logControllerError } = require("../services/logger");
 
 exports.create = async (req, res, next) => {
   try {
@@ -60,6 +61,7 @@ exports.create = async (req, res, next) => {
     await CartItem.deleteMany({ customer });
     return res.status(201).json(newOrder);
   } catch (err) {
+    logControllerError(err);
     next(err); 
   }
 };
@@ -95,6 +97,7 @@ exports.list = async (req, res, next) => {
       .sort({ createdAt: -1 }); // sort ашиглан үүссэн хугацаагаар нь буурах эрэмбээр эрэмбэлнэ. 
     return res.status(200).json({ rows: orders, count: count }); // orders болон count - г json хэлбэрээр буцаана. 
   } catch (err) {
+    logControllerError(err);
     next(err);
   }
 };
@@ -120,6 +123,7 @@ exports.getById = async (req, res, next) => {
 
     return res.status(200).json(order);
   } catch (err) {
+    logControllerError(err);
     next(err);
   }
 };
@@ -134,6 +138,7 @@ exports.update = async (req, res, next) => {
     }
     return res.status(200).json({ message: "Order updated successfully" });
   } catch (err) {
+    logControllerError(err);
     next(err);
   }
 };
@@ -153,6 +158,7 @@ exports.getByCustomer = async (req, res, next) => {
 
     return res.status(200).json(orders);
   } catch (err) {
+    logControllerError(err);
     next(err);
   }
 };
@@ -170,6 +176,7 @@ exports.deleteOrder = async (req, res, next) => {
 
     return res.status(200).json({ message: "Order deleted successfully" });
   } catch (err) {
+    logControllerError(err);
     next(err);
   }
 };

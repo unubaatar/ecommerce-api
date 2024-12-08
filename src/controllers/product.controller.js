@@ -1,4 +1,5 @@
 const Product = require("../models/product.model");
+const { logControllerError } = require("../services/logger");
 
 exports.create = async (req, res, next) => {
   try {
@@ -17,6 +18,7 @@ exports.create = async (req, res, next) => {
     await newProduct.save();
     return res.status(201).json({ message: "Created new product", newProduct });
   } catch (err) {
+    logControllerError(err);
     next(err);
   }
 };
@@ -50,6 +52,7 @@ exports.list = async (req, res, next) => {
 
     return res.status(200).json({ rows: items, count: totalCount });
   } catch (err) {
+    logControllerError(err);
     next(err);
   }
 };
@@ -74,6 +77,7 @@ exports.getAll = async (req, res, next) => {
 
     return res.status(200).json({ rows: items, count: totalCount });
   } catch (err) {
+    logControllerError(err);
     next(err);
   }
 };
@@ -88,6 +92,7 @@ exports.update = async (req, res, next) => {
     }
     return res.status(200).json({ message: "Product not found" });
   } catch (err) {
+    logControllerError(err);
     next(err);
   }
 };
@@ -103,6 +108,7 @@ exports.getById = async (req, res, next) => {
     }
     return res.status(200).json(product);
   } catch (err) {
+    logControllerError(err);
     next(err);
   }
 };
