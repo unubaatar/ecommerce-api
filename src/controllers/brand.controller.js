@@ -43,16 +43,16 @@ exports.update = async(req , res , next) => {
     }
 }
 
-exports.all = async(req , res , next) => {
-    try {
-        const brands = await Brand.find({});
-        const count = await Brand.countDocuments({});
-        if(!brands) {
-            return res.status(400).json({ message: "Error occured" });
-        }
-        return res.status({ rows: brands , count: count });
-    } catch(err) {
-        logControllerError(err);
-        next(err);
-    }
-}
+// exports.all = async(req , res , next) => {
+//     try {
+//         const brands = await Brand.find({});
+//         const count = await Brand.countDocuments({});
+//         if(!brands) {
+//             return res.status(400).json({ message: "Error occured" });
+//         }
+//         return res.status({ rows: brands , count: count });
+//     } catch(err) {
+//         logControllerError(err);
+//         next(err);
+//     }
+// }
