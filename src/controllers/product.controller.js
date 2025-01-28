@@ -43,7 +43,7 @@ exports.list = async (req, res, next) => {
     const sortByPrice = priceFilter === "asc" ? 1 : -1;
 
     const items = await Product.find(query)
-      .populate("category brand")
+      .populate("category brand variants")
       .skip((page - 1) * per_page)
       .limit(per_page)
       .sort({ createdAt: sortOrder, price: sortByPrice });
